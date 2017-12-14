@@ -4,18 +4,24 @@
   "description": "firstTry",
   "main": "app.js",
   "dependencies": {
+    "bluebird": "^3.5.1",
+    "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
+    "express": "^4.16.2",
     "jsonwebtoken": "^7.1.9",
     "mongoose": "^4.6.2",
     "mongoose-currency": "^0.2.0",
+    "morgan": "^1.9.0",
+    "passport": "^0.3.2",
     "passport-facebook": "^2.1.1",
     "passport-local": "^1.0.0",
-    "passport": "^0.3.2",
-    "passport-local-mongoose": "^4.1.0"
+    "passport-local-mongoose": "^4.1.0",
+    "serve-favicon": "^2.4.5"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./bin/www"
   },
   "repository": {
     "type": "git",
