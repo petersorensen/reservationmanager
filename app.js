@@ -37,7 +37,7 @@ var tripRouter = require('./routes/tripRouter');
 var vehicleRouter = require('./routes/vehicleRouter');
 
 var app = express();
-app.use(cors());
+app.use(cors({origin: '*'}));
 
 // Secure traffic only
 /*
