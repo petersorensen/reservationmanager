@@ -3,9 +3,8 @@
 var dboper = require('./operations');
 
 // skal kunne 
-//   give alle personer
-//   give alle personer 10 af gangen
-//   give bestemt person udfra id
+//   give alle locationer
+//   give bestemt location udfra id
 //   søgning ud fra string
 
 var express = require('express');
