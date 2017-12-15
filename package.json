@@ -9,6 +9,7 @@
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.4",
     "express": "^4.16.2",
+    "jade": "^1.11.0",
     "jsonwebtoken": "^7.1.9",
     "mongoose": "^4.6.2",
     "mongoose-currency": "^0.2.0",
