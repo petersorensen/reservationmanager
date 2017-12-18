@@ -9,7 +9,7 @@ var Verify = require('./verify');
 var Users = require('../models/user');
 
 router.route('/')
-    .get(Verify.verifyAdmin, function (req, res, next) {
+    .get(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
         console.log("GETTING USERS")
         Users.find({}, function (err, users) {
             if (err) {

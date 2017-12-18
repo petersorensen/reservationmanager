@@ -3,9 +3,8 @@
 var dboper = require('./operations');
 
 // skal kunne 
-//   give alle personer
-//   give alle personer 10 af gangen
-//   give bestemt person udfra id
+//   give alle vehicles
+//   give bestemt vehicle udfra id
 //   søgning ud fra string
 
 var express = require('express');
@@ -50,32 +49,33 @@ function eliminateDuplicates(arr) {
 
 vehicleRouter.route('/')
     .get(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
-        var searchArray = req.decoded._doc.person.managerOfGroups.concat(req.decoded._doc.person.inGroups);
-//        searchArray =  eliminateDuplicates(searchArray);
-        req.query["inGroup"] = { $in: searchArray }
-
-        var str = req.query;
-        Vehicles.find(str)   // (req.query)
+        if (!req.decoded._doc.person.isTopManager) {
+                if (req.query["inGroup"]) {
+                    if (-1 === req.decoded._doc.person.managerOfGroups.indexOf(req.query["inGroup"]))
+                        return next("You are not authorized");
+                }
+                else
+                    req.query["inGroup"] = { $in: req.decoded._doc.person.managerOfGroups }
+        }
+        Vehicles.find(req.query)
         .populate('inGroup')
         .populate({path : 'inGroup', populate : {path : 'locationId'}})
         .exec(function (err, resp) {
             if (err) { return next(err); }
-            console.log(resp);
             res.json(resp);
         });
     })
 
-    .post(Verify.verifyOrdinaryUser, Verify.verifyAdmin, function (req, res, next) {
-        console.log("NEW VEHICLE ", req.body)
+    .post(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
+//        console.log("NEW VEHICLE ", req.body)
         Vehicles.create(req.body, function (err, resp) {
             if (err) { return next(err); }
-            console.log('Vehicle inserted!');
-            console.log(resp);
+            console.log('Vehicle inserted!',resp.brand,resp.model);
             res.json(resp);
         });
     })
 
-    .delete(/*Verify.verifyOrdinaryUser, Verify.verifyAdmin,*/ function (req, res, next) {
+    .delete(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson, Verify.verifyAdmin, function (req, res, next) {
         Vehicles.remove({}, function (err, resp) {
             if (err) { return next(err); }
             res.json(resp);
@@ -98,7 +98,7 @@ vehicleRouter.route('/:vehicleId')
             });
     })
 
-    .put(Verify.verifyOrdinaryUser, Verify.verifyAdmin, function (req, res, next) {
+    .put(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson, Verify.verifyManager, function (req, res, next) {
         Vehicles.findByIdAndUpdate(req.params.vehicleId, {
             $set: req.body
         }, {
@@ -109,7 +109,7 @@ vehicleRouter.route('/:vehicleId')
         });
     })
     
-    .delete(Verify.verifyOrdinaryUser, Verify.verifyAdmin, function (req, res, next) {
+    .delete(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson, Verify.verifyAdmin, function (req, res, next) {
         Vehicles.findByIdAndRemove(req.params.vehicleId, function (err, resp) {
             if (err) { return next(err); }
             res.json(resp);

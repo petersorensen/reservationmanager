@@ -34,8 +34,14 @@ var cb1 = function (tal,req, res, next) {
 
 personRouter.route('/')
 	.get(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
-        req.query["inGroup"] = { $in: req.decoded._doc.person.managerOfGroups }
-        {
+            if (!req.decoded._doc.person.isTopManager) {
+                if (req.query["inGroup"]) {
+                    if (-1 === req.decoded._doc.person.managerOfGroups.indexOf(req.query["inGroup"]))
+                        return next("You are not authorized");
+                }
+                else
+                    req.query["inGroup"] = { $in: req.decoded._doc.person.managerOfGroups }
+            }
             People.find(req.query)
             .populate('workLocation')
             .populate('inGroup')
@@ -44,24 +50,25 @@ personRouter.route('/')
                 if (err) { return next(err); }
                 res.json(resp);
             });
-        }
+        
     })
 
      // any person can register
 	.post(function (req, res, next) {
-        console.log("INSERTING NEW PERSON: ", req.body);
+//        console.log("INSERTING NEW PERSON: ", req.body);
         var password = req.body.password;
         req.body.password = null;
         People.create(req.body, function (err, person) {
             if (err) {
-                console.log(err);
+                    console.log("ERROR USER ",req.body.firstname)
+//                console.log(err);
                 return next(err); 
             } 
             var id = person._id;
             User.register(new User({ username : req.body.username,personId: person._id,admin: false }),
                 password, function(err, user) {
                     if (err) {
-                        console.log("error in register PHS - users")
+                        console.log("error in register PHS - users",req.body.username)
                         // delete person  before returning
                           return next(err); 
                     };
@@ -106,7 +113,7 @@ personRouter.route('/:personId')
             });
     })
 
-    .put(Verify.verifyOrdinaryUser, Verify.verifyAdmin, function (req, res, next) {
+    .put(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
         People.findByIdAndUpdate(req.params.personId, {
             $set: req.body
         }, {

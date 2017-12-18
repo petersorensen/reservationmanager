@@ -20,7 +20,7 @@ var Verify = require('./verify');
 
 locationRouter.route('/')
     .get(function (req, res, next) {
-        console.log(req.query)
+//        console.log(req.query)
         Locations.find(req.query, function (err, resp) {
             if (err) { return next(err); }
             console.log("LOCATIONS FOUND")
@@ -28,16 +28,16 @@ locationRouter.route('/')
         });
     })
 
-    .post(Verify.verifyTopManager, Verify.verifyAdmin, function (req, res, next) {
+    .post(Verify.verifyTopManager,Verify.getVerifiedPerson, Verify.verifyAdmin, function (req, res, next) {
         Locations.create(req.body, function (err, resp) {
             if (err) { return next(err); }
-            console.log('Item inserted!');
-            console.log(resp);
+//            console.log('Item inserted!');
+//            console.log(resp);
             res.json(resp);
         });
     })
 
-    .delete(Verify.verifyTopManager, Verify.verifyAdmin, function (req, res, next) {
+    .delete(Verify.verifyTopManager,Verify.getVerifiedPerson, Verify.verifyManager, function (req, res, next) {
         Locations.remove({}, function (err, resp) {
             if (err) { return next(err); }
             res.json(resp);
@@ -45,7 +45,6 @@ locationRouter.route('/')
     });
 
 locationRouter.route('/:itemId')
-//  dboper.findDocuments(db, "people",{ _id: "57d9267849416615e46887ac" }, function (docs) {
    .get(Verify.verifyOrdinaryUser, function (req, res, next) {
          console.log('locationRouter/itemId')
          console.log(req.params.itemId)
@@ -58,7 +57,7 @@ locationRouter.route('/:itemId')
             });
     })
 
-    .put(Verify.verifyTopManager, Verify.verifyAdmin, function (req, res, next) {
+    .put(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
         Locations.findByIdAndUpdate(req.params.itemId, {
             $set: req.body
         }, {
@@ -69,7 +68,7 @@ locationRouter.route('/:itemId')
         });
     })
     
-    .delete(Verify.verifyTopManager, Verify.verifyAdmin, function (req, res, next) {
+    .delete(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
         Locations.findByIdAndRemove(req.params.itemId, function (err, resp) {
             if (err) { return next(err); }
             res.json(resp);

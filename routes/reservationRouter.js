@@ -22,7 +22,14 @@ var Verify = require('./verify');
 
 reservationRouter.route('/')
     .get(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
-        req.query["inGroup"] = { $in: req.decoded._doc.person.managerOfGroups }
+        if (!req.decoded._doc.person.isTopManager) {
+            if (req.query["inGroup"]) {
+                if (-1 === req.decoded._doc.person.managerOfGroups.indexOf(req.query["inGroup"]))
+                    return next("You are not authorized");
+            }
+            else
+                req.query["inGroup"] = { $in: req.decoded._doc.person.managerOfGroups }
+        }
         Vehicles.find(req.query)
         .exec(function (err, resp) {
             if (err) { return next(err); }
@@ -40,10 +47,10 @@ reservationRouter.route('/')
     })
 
 	.post(Verify.verifyOrdinaryUser, function (req, res, next) {
-        console.log(req.body);
+//        console.log(req.body);
         Reservations.create(req.body, function (err, resp) {
             if (err) { return next(err); }
-            console.log('Reservation inserted!');
+//            console.log('Reservation inserted!');
             var id = resp._id;
             res.writeHead(200, {
                 'Content-Type': 'text/plain'
@@ -53,7 +60,7 @@ reservationRouter.route('/')
         });
     })
 
-    .delete(Verify.verifyOrdinaryUser, Verify.verifyAdmin, function (req, res, next) {
+    .delete(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
         Reservations.remove({}, function (err, resp) {
             if (err) { return next(err); }
             res.json(resp);

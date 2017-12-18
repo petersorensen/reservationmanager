@@ -114,7 +114,6 @@ exports.verifyTopManager = function (req, res, next) {
                 return next(err);
             } else {
                 // if everything is good, save to request for use in other routes
-                console.log("TopManager decoded", decoded)
                 req.decoded = decoded;
 
                 People.findOne({_id: req.decoded._doc.personId})
@@ -124,7 +123,6 @@ exports.verifyTopManager = function (req, res, next) {
                             err.status = 403;
                             return next(err);
                         }
-                        console.log("TOP MANAGER PERSON",resp);
                         return next();
                     });
             }

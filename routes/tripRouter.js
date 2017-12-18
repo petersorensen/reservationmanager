@@ -22,7 +22,14 @@ var Verify = require('./verify');
 
 tripRouter.route('/')
     .get(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
-        req.query["inGroup"] = { $in: req.decoded._doc.person.managerOfGroups }
+        if (!req.decoded._doc.person.isTopManager) {
+            if (req.query["inGroup"]) {
+                if (-1 === req.decoded._doc.person.managerOfGroups.indexOf(req.query["inGroup"]))
+                    return next("You are not authorized");
+            }
+            else
+                req.query["inGroup"] = { $in: req.decoded._doc.person.managerOfGroups }
+        }
         Vehicles.find(req.query)
         .exec(function (err, resp) {
             if (err) { return next(err); }
@@ -42,10 +49,8 @@ tripRouter.route('/')
     })
 
 	.post( Verify.verifyOrdinaryUser, function (req, res, next) {
-        console.log("TRIP",req.body);
         Trips.create(req.body, function (err, resp) {
             if (err) { console.log("ERROR",err);return next(err); }
-            console.log('Trip inserted!');
             var id = resp._id;
             res.writeHead(200, {
                 'Content-Type': 'text/plain'
@@ -78,11 +83,27 @@ tripRouter.route('/person/:personId')
         });
     });
 
+tripRouter.route('/month/:monthNo')
+    .get(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager,function (req, res, next) {
+        let month = Number(req.params.monthNo)%100;
+        let year  = Math.floor((Number(req.params.monthNo)-month)/100+0.5);
+        let start  = new Date(year.toString()+"-"+month.toString()+"-01");
+        let slut   = new Date(year.toString()+"-"+(month+1).toString()+"-01");
+
+        Trips.aggregate([
+            { $match: {$and: [{dateTo: {$gte: start}}, {dateFrom: {$lt: slut}}]}},
+            {$group: {_id: "$vehicleId",total: {$sum:"$tripLength"}}}
+            ], function (err, resp) {
+                if (err) {console.log(err); return next(err); }
+                Vehicles.populate(resp, {path: "_id"},function (err, resp) {
+                    if (err) {console.log(err); return next(err); }
+                    res.json(resp);
+                });
+        });
+    });
+
 tripRouter.route('/:tripId')
    .get(Verify.verifyOrdinaryUser, function (req, res, next) {
-//        People.findById(req.params.personId)
-        console.log("Finder gruppe")
-        console.log(req.params.tripId)
         Trips.findOne({_id: req.params.tripId})
             .populate('personId')
             .populate('vehicleId')

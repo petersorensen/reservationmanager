@@ -17,6 +17,10 @@ var tripSchema = new Schema({
         type: String,
         required: true
     },
+    tripLength: {
+        type: Number,
+        required: true
+    },
     personCount: {
         type: Number,
         required: true
