@@ -43,30 +43,6 @@ router.post('/register', function(req, res) {
                 });
             });
         });
-/*
-    req.body.username = req.body.username.toUpperCase()
-    console.log("USERNAME UPPERCASE ", req.body.username)
-    // first make corresponding fictiv person
-    placeholderPerson = { 
-        firstname: "fictive",
-        familyname: "fictive",
-        email: "fictive@fictive2.com",
-        isTopManager: false,
-        isProspect: false,
-        isHistoric: false
-    };
-    placeholderPerson.username = req.body.username; 
-    console.log("USERNAME: ", placeholderPerson.username);
-    var id;
-    People.create(placeholderPerson, function (err, person) {
-        console.log('Will insert Fictive Person');
-
-        if (err) { console.log(err);return next(err); } 
-
-       console.log('Fictive Person inserted! id: ',person._id);
-       id = person._id;
-    });
-*/
 })
 ;
 

@@ -21,7 +21,8 @@ tripRouter.use(bodyParser.json());
 var Verify = require('./verify');
 
 tripRouter.route('/')
-    .get(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson,Verify.verifyManager, function (req, res, next) {
+    .get(Verify.verifyOrdinaryUser,Verify.getVerifiedPerson/*,Verify.verifyManager*/, function (req, res, next) {
+        console.log("USER")
         if (!req.decoded._doc.person.isTopManager) {
             if (req.query["inGroup"]) {
                 if (-1 === req.decoded._doc.person.managerOfGroups.indexOf(req.query["inGroup"]))
